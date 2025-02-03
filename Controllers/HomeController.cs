@@ -1,17 +1,32 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebAppFormMVC.Models;
 
 namespace WebAppFormMVC.Controllers
 {
     public class HomeController : Controller
-    {
-        private readonly ILogger<HomeController> _logger;
+    { 
+        private readonly ApplicationDbContext _context;
+        
+        public HomeController(ApplicationDbContext context)
+        { 
+            _context = context;
+        } 
 
-        public HomeController(ILogger<HomeController> logger)
+        [HttpPost]
+        public IActionResult Submit(ContactMessage model)
         {
-            _logger = logger;
-        }
+            if (!ModelState.IsValid)
+            {
+                return View("Index", model);
+            }
+            _context.ContactMessages.Add(model);
+            _context.SaveChanges();
+
+            TempData["SuccessMessage"] = "Tu mensaje ha sido enviado con éxito.";
+            return RedirectToAction("Index");
+        } 
 
         public IActionResult Index()
         {
@@ -27,6 +42,7 @@ namespace WebAppFormMVC.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        } 
+
     }
 }
