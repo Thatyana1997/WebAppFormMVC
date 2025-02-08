@@ -7,21 +7,23 @@ namespace WebAppFormMVC.Controllers
 {
     public class HomeController : Controller
     { 
-        private readonly ApplicationDbContext _context;
-        
+        private readonly ApplicationDbContext _context; 
+
         public HomeController(ApplicationDbContext context)
         { 
-            _context = context;
+            _context = context; 
         } 
 
         [HttpPost]
-        public IActionResult Submit(ContactMessage model)
+        public IActionResult Submit(ContactViewModel model)
         {
             if (!ModelState.IsValid)
             {
+                model.Mensajes = _context.ContactMessages.ToList(); // Recargar los mensajes en caso de error
                 return View("Index", model);
             }
-            _context.ContactMessages.Add(model);
+
+            _context.ContactMessages.Add(model.NuevoMensaje);
             _context.SaveChanges();
 
             TempData["SuccessMessage"] = "Tu mensaje ha sido enviado con éxito.";
@@ -30,7 +32,12 @@ namespace WebAppFormMVC.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            var viewModel = new ContactViewModel
+            {
+                NuevoMensaje = new ContactMessage(),
+                Mensajes = _context.ContactMessages.ToList()
+            };
+            return View(viewModel);
         }
 
         public IActionResult Privacy()
